@@ -9,8 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  PYTHON_VERSION: '3.9'
-  REQUIREMENTS_PATH: src/requirements.txt
+  NODE_VERSION: '20'
 
 jobs:
 
@@ -26,13 +25,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: |
-          pip install -r $REQUIREMENTS_PATH
+        run: npm install --prefix src
 
       - name: Run SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v2
@@ -43,7 +41,6 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ github.event.repository.name }}
             -Dsonar.sources=src
-            -Dsonar.python.version=3.9
 
 # ─────────────────────────────────────────────
 # JOB 2 — NOTIFY IF SONAR FAILS
@@ -78,19 +75,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: |
-          pip install -r $REQUIREMENTS_PATH
+        run: npm install --prefix src
 
       - name: Setup Snyk
         uses: snyk/actions/setup@master
 
       - name: Run Snyk Scan
-        run: snyk test --file=$REQUIREMENTS_PATH --severity-threshold=high
+        run: snyk test --file=src/package.json --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
