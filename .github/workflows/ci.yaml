@@ -126,11 +126,31 @@ jobs:
       - run: echo "Approved"
 
 # ─────────────────────────────────────────────
-# JOB 6 — DOCKER BUILD & PUSH
+# JOB 6 — TRIVY SCAN (report only)
 # ─────────────────────────────────────────────
-  docker:
+  trivy-scan:
     needs: approval
     if: needs.approval.result == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: '0'
+          severity: CRITICAL,HIGH
+
+# ─────────────────────────────────────────────
+# JOB 7 — DOCKER BUILD & PUSH
+# ─────────────────────────────────────────────
+  docker:
+    needs: trivy-scan
+    if: needs.trivy-scan.result == 'success'
     runs-on: ubuntu-latest
 
     permissions:
