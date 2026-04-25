@@ -117,11 +117,11 @@ jobs:
 # ─────────────────────────────────────────────
   approval:
     needs: snyk-scan
-    if: needs.snyk-scan.result == 'success' && github.event_name == 'push'
+    if: needs.snyk-scan.result == 'success' && github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-latest
 
     environment:
-      name: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+      name: prod
 
     steps:
       - run: echo "Approved"
@@ -130,8 +130,11 @@ jobs:
 # JOB 6 — TRIVY SCAN (report only)
 # ─────────────────────────────────────────────
   trivy-scan:
-    needs: approval
-    if: needs.approval.result == 'success'
+    needs: [snyk-scan, approval]
+    if: |
+      always() &&
+      needs.snyk-scan.result == 'success' &&
+      (needs.approval.result == 'success' || needs.approval.result == 'skipped')
     runs-on: ubuntu-latest
 
     steps:
