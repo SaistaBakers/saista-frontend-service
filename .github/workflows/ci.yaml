@@ -154,7 +154,7 @@ jobs:
 # ─────────────────────────────────────────────
   docker:
     needs: trivy-scan
-    if: needs.trivy-scan.result == 'success'
+    if: needs.trivy-scan.result == 'success' && github.event_name == 'push'
     runs-on: ubuntu-latest
 
     permissions:
