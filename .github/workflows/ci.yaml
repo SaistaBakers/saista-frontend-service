@@ -71,7 +71,6 @@ jobs:
     needs: sonar-scan
     if: needs.sonar-scan.result == 'success'
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +86,7 @@ jobs:
         uses: snyk/actions/setup@master
 
       - name: Run Snyk Scan
+        continue-on-error: true
         run: snyk test --file=src/package.json --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
